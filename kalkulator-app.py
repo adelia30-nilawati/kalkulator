@@ -1,36 +1,40 @@
-from sympy import symbols, diff, integrate, sympify
-import matplotlib.pyplot as plt
+import streamlit as st
+from sympy import symbols, diff, integrate, sympify, lambdify
 import numpy as np
+import matplotlib.pyplot as plt
 
 x = symbols('x')
 
-# Input fungsi dari user
-fungsi_str = input("Masukkan fungsi aljabar (misal: x**2 + 3*x + 2): ")
-fungsi = sympify(fungsi_str)
+st.title("🧮 Kalkulator Turunan & Integral + Grafik")
 
-# Operasi
-pilihan = input("Ketik 'd' untuk turunan atau 'i' untuk integral: ")
+fungsi_str = st.text_input("Masukkan fungsi aljabar (misal: x**2 + 3*x + 2):", "x**2 + 3*x + 2")
+try:
+    fungsi = sympify(fungsi_str)
 
-if pilihan == 'd':
-    hasil = diff(fungsi, x)
-    print(f"Turunan: {hasil}")
-elif pilihan == 'i':
-    hasil = integrate(fungsi, x)
-    print(f"Integral: {hasil}")
+    operasi = st.radio("Pilih operasi:", ['Turunan', 'Integral'])
 
-# Plot grafik
-x_vals = np.linspace(-10, 10, 400)
-fungsi_lambda = lambdify(x, fungsi, modules=['numpy'])
-y_vals = fungsi_lambda(x_vals)
+    if operasi == 'Turunan':
+        hasil = diff(fungsi, x)
+        st.latex(r"f'(x) = " + str(hasil))
+    else:
+        hasil = integrate(fungsi, x)
+        st.latex(r"\int f(x)\,dx = " + str(hasil))
 
-plt.plot(x_vals, y_vals, label='f(x)')
+    # Plot
+    x_vals = np.linspace(-10, 10, 400)
+    fungsi_lambda = lambdify(x, fungsi, modules=['numpy'])
+    hasil_lambda = lambdify(x, hasil, modules=['numpy'])
 
-if pilihan == 'd':
-    turunan_lambda = lambdify(x, hasil, modules=['numpy'])
-    plt.plot(x_vals, turunan_lambda(x_vals), label="f'(x)", linestyle='--')
-plt.title("Grafik Fungsi dan Turunan/Integral")
-plt.legend()
-plt.grid(True)
-plt.show()
+    y_vals = fungsi_lambda(x_vals)
+    y_hasil_vals = hasil_lambda(x_vals)
 
+    fig, ax = plt.subplots()
+    ax.plot(x_vals, y_vals, label='f(x)')
+    ax.plot(x_vals, y_hasil_vals, label="Hasil", linestyle='--')
+    ax.set_title("Grafik Fungsi dan Hasil Operasi")
+    ax.grid(True)
+    ax.legend()
 
+    st.pyplot(fig)
+except Exception as e:
+    st.error(f"Terjadi error: {e}")
