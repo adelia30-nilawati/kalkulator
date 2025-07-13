@@ -38,3 +38,4 @@ try:
     st.pyplot(fig)
 except Exception as e:
     st.error(f"Terjadi error: {e}")
+    
